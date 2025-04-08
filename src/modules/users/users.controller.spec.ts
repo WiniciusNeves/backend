@@ -3,28 +3,43 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+
+jest.mock('../../config/firebase.config', () => ({
+  bucket: {
+    file: jest.fn().mockReturnThis(),
+    save: jest.fn(),
+  },
+}));
 
 describe('UsersController', () => {
   let controller: UsersController;
   let service: UsersService;
 
   const mockUserRepository = {
-    create: jest.fn(), // Simula o método create
-    save: jest.fn(),   // Simula o método save
-    findOne: jest.fn(), // Simula o método findOne
+    create: jest.fn(),
+    save: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+  };
+
+  const mockUsersService = {
+    create: jest.fn(),
+    uploadProfileImage: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
-        UsersService,
         {
-          provide: getRepositoryToken(User), // Mock do UserRepository
-          useValue: mockUserRepository,     // Use o mock explícito
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
+        {
+          provide: getRepositoryToken(User),
+          useValue: mockUserRepository,
         },
       ],
     }).compile();
@@ -54,15 +69,31 @@ describe('UsersController', () => {
       created_at: new Date(),
     };
 
-    // Simula o comportamento do método save
-    mockUserRepository.save.mockResolvedValue(mockUser);
+    mockUsersService.create.mockResolvedValue(mockUser);
 
     const result = await controller.create(createUserDto);
 
-    expect(result).toEqual({
-      id: 1,
-      ...createUserDto,
-      created_at: expect.any(Date),
-    });
+    expect(result).toEqual(mockUser);
+    expect(mockUsersService.create).toHaveBeenCalledWith(createUserDto);
+  });
+
+  it('should upload a profile image', async () => {
+    const mockFile = {
+      originalname: 'photo.jpg',
+      mimetype: 'image/jpeg',
+      buffer: Buffer.from('test'),
+    } as unknown as Express.Multer.File;
+
+    const mockResponse = {
+      imageUrl: 'https://firebase/storage/photo.jpg',
+    };
+
+    // Simula o método da service
+    jest.spyOn(service, 'uploadProfileImage').mockResolvedValue(mockResponse);
+
+    const result = await controller.uploadProfileImage('1', mockFile);
+
+    expect(result).toEqual(mockResponse);
+    expect(service.uploadProfileImage).toHaveBeenCalledWith(mockFile, '1');
   });
 });

@@ -1,14 +1,27 @@
 // src/modules/users/users.controller.ts
 
-import { Controller, Post, Body, Put, Param, Get, Delete, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Put,
+  Param,
+  Get,
+  Delete,
+  Req,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
@@ -41,5 +54,10 @@ export class UsersController {
     return this.usersService.findOne(Number(id));
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/profile-image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadProfileImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    return this.usersService.uploadProfileImage(file, id);
+  }
 }
-

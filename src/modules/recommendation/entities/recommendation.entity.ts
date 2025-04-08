@@ -1,23 +1,23 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { Service } from '../../services/entities/service.entity';
+// src/modules/recommendation/entities/recommendation.entity.ts
 
-@Entity('recommendations')
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from 'src/modules/users/entities/user.entity';
+import { Service } from 'src/modules/services/entities/service.entity'; // ajuste se o caminho for diferente
+
+@Entity()
 export class Recommendation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Service)
-  @JoinColumn({ name: 'service_id' })
-  service: Service;
-
-  @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
+  @ManyToOne(() => User, (user) => user.recommendations)
   user: User;
 
-  @Column({ type: 'int' })
-  stars: number;
+  @ManyToOne(() => User, (user) => user.recommendedBy)
+  recommended: User;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
+  @ManyToOne(() => Service, (service) => service.recommendations)
+  service: Service;
+
+  @Column({ type: 'int', default: 5 })
+  stars: number;
 }

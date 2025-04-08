@@ -23,6 +23,10 @@ export class CreateUserDto {
   whatsapp: string;
 
   @IsString()
-  profile_picture: string;
-  
+  profile_picture?: string;
+
+  @IsString()
+  auth_provider?: string; // 'google', 'local', etc.
+   
+   
 }
