@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MulterModule } from '@nestjs/platform-express';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -18,6 +21,7 @@ import { ReportsAbuseModule } from './modules/report-abuse/reports-abuse.module'
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -28,12 +32,19 @@ import { ReportsAbuseModule } from './modules/report-abuse/reports-abuse.module'
       }),
       inject: [ConfigService],
     }),
+
+    MulterModule.register({
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB (ajustável)
+      },
+    }),
+
     UsersModule,
     AuthModule,
     CategoriesModule,
     ServicesModule,
     ProvidersModule,
-    ProviderServicesModule, 
+    ProviderServicesModule,
     FeedbacksModule,
     RecommendationsModule,
     ReportsAbuseModule,
@@ -42,4 +53,3 @@ import { ReportsAbuseModule } from './modules/report-abuse/reports-abuse.module'
   providers: [AppService],
 })
 export class AppModule {}
-
