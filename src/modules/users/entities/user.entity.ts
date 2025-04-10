@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Recommendation } from '../../recommendation/entities/recommendation.entity';
 import { IsEmail, IsEnum, IsPhoneNumber, IsString } from 'class-validator';
+import { Service } from '@/modules/services/entities/service.entity';
 
 export enum Role {
   COMMON = 'common',
@@ -39,6 +40,9 @@ export class User {
 
   @OneToMany(() => Recommendation, (recommendation) => recommendation.recommended)
   recommendedBy: Recommendation[];
+
+  @OneToMany(() => Service, (service) => service.user, { cascade: true })
+  services: Service[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

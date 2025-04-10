@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { Recommendation } from '../../recommendation/entities/recommendation.entity';
+import { User } from '@/modules/users/entities/user.entity';
 
 @Entity('services')
 export class Service {
@@ -21,4 +22,10 @@ export class Service {
 
   @ManyToOne(() => Category, (category) => category.services, { nullable: false, eager: true })
   category: Category;
+
+  @ManyToOne(() => User, (user) => user.services, { nullable: false, eager: true, onDelete: 'CASCADE' })
+  user: User;
+
+  @CreateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
 }
