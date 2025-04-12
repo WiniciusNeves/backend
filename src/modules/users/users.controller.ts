@@ -8,10 +8,11 @@ import {
   Param,
   Get,
   Delete,
-  Req,
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -34,30 +35,46 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(Number(id), updateUserDto);
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.usersService.remove(Number(id));
-  }
-
   @Get()
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.usersService.findOne(Number(id));
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
+  @Put(':id/password')
+  async updatePassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('password') password: string,
+  ) {
+    await this.usersService.updatePassword(id, password);
+    return { message: 'Senha atualizada com sucesso' };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.usersService.remove(id);
+    return { message: 'Usuário removido com sucesso' };
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post(':id/profile-image')
+  @Post(':id/upload-profile-image')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadProfileImage(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  async uploadProfileImage(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     return this.usersService.uploadProfileImage(file, id);
   }
 }

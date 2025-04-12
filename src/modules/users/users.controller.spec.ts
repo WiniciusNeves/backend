@@ -91,9 +91,9 @@ describe('UsersController', () => {
     // Simula o método da service
     jest.spyOn(service, 'uploadProfileImage').mockResolvedValue(mockResponse);
 
-    const result = await controller.uploadProfileImage('1', mockFile);
+    const result = await controller.uploadProfileImage(1, mockFile);
 
     expect(result).toEqual(mockResponse);
-    expect(service.uploadProfileImage).toHaveBeenCalledWith(mockFile, '1');
+    expect(service.uploadProfileImage).toHaveBeenCalledWith(mockFile, 1);
   });
 });

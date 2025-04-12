@@ -11,33 +11,29 @@ import * as admin from 'firebase-admin';
 
 @Injectable()
 export class AuthService {
+  private tokenBlacklist: Set<string> = new Set(); // Lista negra de tokens
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
-    // Verifique se o password foi fornecido
     if (!registerDto.password) {
       throw new Error('Password is required');
     }
 
-    // Criptografe a senha
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
-    // Certifique-se de que o valor do role é válido
     const role = registerDto.role === 'common' || registerDto.role === 'admin'
       ? registerDto.role
       : Role.COMMON;
 
-    // Crie o usuário
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
-      role, // Use o role validado ou o padrão
+      role,
     });
 
-    // Retorne o token JWT e os dados do usuário
     return {
       access_token: this.jwtService.sign({ id: user.id, email: user.email }),
       user,
@@ -62,42 +58,81 @@ export class AuthService {
     };
   }
 
-  async logout() {
-    // Implemente a lógica de logout aqui
-    // Por exemplo, você pode invalidar o token JWT
+  async logout(token: string) {
+    this.tokenBlacklist.add(token); // Adiciona o token à lista negra
     return { message: 'Logout realizado com sucesso' };
   }
 
-  async refreshToken() {
-    // Implemente a lógica de refresh token aqui
-    // Por exemplo, você pode gerar um novo token JWT
-    return { message: 'Token de refresh gerado com sucesso' };
+  isTokenBlacklisted(token: string): boolean {
+    return this.tokenBlacklist.has(token); // Verifica se o token está na lista negra
+  }
+
+  async refreshToken(oldToken: string) {
+    if (this.isTokenBlacklisted(oldToken)) {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
+
+    const decoded = this.jwtService.decode(oldToken) as any;
+    const payload = { sub: decoded.sub, email: decoded.email };
+
+    const newToken = this.jwtService.sign(payload, { expiresIn: '15m' }); // Novo token com expiração
+    return { access_token: newToken };
   }
 
   async forgotPassword(email: string) {
-    // Implemente a lógica de forgot password aqui
-    // Por exemplo, você pode enviar um e-mail com um link de recuperação de senha
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    // Simula o envio de um e-mail com um token de recuperação
+    const resetToken = this.jwtService.sign({ id: user.id }, { expiresIn: '1h' });
+    // Aqui você pode integrar com um serviço de e-mail para enviar o token
+    console.log(`Token de recuperação enviado para ${email}: ${resetToken}`);
+
     return { message: 'E-mail de recuperação de senha enviado com sucesso' };
   }
 
   async resetPassword(token: string, newPassword: string) {
-    // Implemente a lógica de reset password aqui
-    // Por exemplo, você pode atualizar a senha do usuário
-    return { message: 'Senha resetada com sucesso' };
+    try {
+      const decoded = this.jwtService.verify(token);
+      const user = await this.usersService.findById(decoded.id);
+
+      if (!user) {
+        throw new UnauthorizedException('Usuário não encontrado');
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await this.usersService.updatePassword(user.id, hashedPassword);
+
+      return { message: 'Senha resetada com sucesso' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
   }
 
-  async verifyEmail(token: string) {
-    // Implemente a lógica de verify email aqui
-    // Por exemplo, você pode verificar se o token é válido
-    return { message: 'E-mail verificado com sucesso' };
+async verifyEmail(token: string): Promise<{ message: string }> {
+    try {
+      const decoded = this.jwtService.verify(token);
+      const user = await this.usersService.findById(decoded.id);
+
+      if (!user) {
+        throw new UnauthorizedException('Usuário não encontrado');
+      }
+
+      await this.usersService.verifyEmail(user.id.toString());
+      return { message: 'E-mail verificado com sucesso' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
   }
 
   async loginWithGoogle(idToken: string) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const { email, name, picture, uid } = decodedToken;
-      
-      if(!email) {
+      const { email, name, picture } = decodedToken;
+
+      if (!email) {
         throw new Error('E-mail não encontrado no token de autenticação');
       }
 
@@ -109,17 +144,20 @@ export class AuthService {
           name,
           profile_picture: picture,
           auth_provider: 'google',
-          phone: '', // ou outro valor padrão
-          whatsapp: '', // ou outro valor padrão
-          password: '', // ou outro valor padrão
-          role: Role.COMMON, // ou outro valor padrão
+          phone: '',
+          whatsapp: '',
+          password: '',
+          role: Role.COMMON,
         });
       }
+
+      const payload = { sub: user.id, email: user.email };
+      const jwtToken = this.jwtService.sign(payload);
 
       return {
         message: 'Login com Google realizado com sucesso!',
         user,
-        token: idToken, // ou gere um token próprio, se quiser
+        access_token: jwtToken,
       };
     } catch (error) {
       throw new UnauthorizedException('Token inválido');

@@ -18,14 +18,18 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout() {
-    return this.authService.logout();
+  logout(@Body('token') token: string) {
+    if (!token) {
+      throw new Error('Token not found');
+    }
+
+    return this.authService.logout(token);
   }
 
-  @Post('refresh-token')
-  refreshToken() {
-    return this.authService.refreshToken();
-  }
+ @Post('refresh-token')
+ refreshToken(@Body('oldToken') oldToken: string) {
+   return this.authService.refreshToken(oldToken);
+ }
   @Post('forgot-password')
   forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);

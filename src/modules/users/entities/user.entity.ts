@@ -1,3 +1,4 @@
+// src/modules/users/entities/user.entity.ts
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Recommendation } from '../../recommendation/entities/recommendation.entity';
 import { IsEmail, IsEnum, IsPhoneNumber, IsString } from 'class-validator';
@@ -9,7 +10,7 @@ export enum Role {
   ADMIN = 'admin',
 }
 
-@Entity('users') // Nome da tabela no banco de dados
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -46,5 +47,16 @@ export class User {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
-}
 
+  @Column({ default: false })
+  user_verified: boolean;
+
+  @Column({ default: false })
+  provider_verified: boolean;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  emailVerificationToken: string | null;
+}

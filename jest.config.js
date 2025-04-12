@@ -1,3 +1,5 @@
+const { watch } = require("fs");
+
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
@@ -12,4 +14,6 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1', // Mapeia o alias "@/..." para o diretório "src"
     '^src/(.*)$': '<rootDir>/src/$1',
   },
+  watchPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
 };
