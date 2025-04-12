@@ -23,7 +23,7 @@ export class Service {
   @ManyToOne(() => Category, (category) => category.services, { nullable: false, eager: true })
   category: Category;
 
-  @ManyToOne(() => User, (user) => user.services, { nullable: false, eager: true, onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.services, { nullable: true, eager: true, onDelete: 'SET NULL' })
   user: User;
 
   @CreateDateColumn({ name: 'updated_at' })

@@ -8,15 +8,15 @@ export class Feedback {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Service)
+  @ManyToOne(() => Service, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'service_id' })
   service: Service;
 
-  @ManyToOne(() => Provider)
+  @ManyToOne(() => Provider, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'provider_id' })
   provider: Provider;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

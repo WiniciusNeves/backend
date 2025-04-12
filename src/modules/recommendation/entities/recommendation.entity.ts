@@ -1,21 +1,22 @@
-// src/modules/recommendation/entities/recommendation.entity.ts
-
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
-import { Service } from 'src/modules/services/entities/service.entity'; // ajuste se o caminho for diferente
+import { Service } from 'src/modules/services/entities/service.entity';
 
-@Entity()
+@Entity('recommendations')
 export class Recommendation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.recommendations)
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => User, (user) => user.recommendedBy)
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'recommended_id' })
   recommended: User;
 
-  @ManyToOne(() => Service, (service) => service.recommendations)
+  @ManyToOne(() => Service, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'service_id' })
   service: Service;
 
   @Column({ type: 'int', default: 5 })

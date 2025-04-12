@@ -7,11 +7,11 @@ export class ProviderService {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Provider)
+  @ManyToOne(() => Provider, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'provider_id' })
   provider: Provider;
 
-  @ManyToOne(() => Service)
+  @ManyToOne(() => Service, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'service_id' })
   service: Service;
 

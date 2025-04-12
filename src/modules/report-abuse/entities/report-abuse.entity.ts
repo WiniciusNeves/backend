@@ -6,7 +6,7 @@ export class ReportAbuse {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
