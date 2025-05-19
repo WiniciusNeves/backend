@@ -59,4 +59,10 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   emailVerificationToken: string | null;
+
+  @Column({ nullable: true })
+  verificationCode: string;
+
+  @Column({ default: false })
+  emailVerified: boolean;
 }

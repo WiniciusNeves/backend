@@ -15,6 +15,7 @@ import { ProviderServicesModule } from './modules/ProviderServicesService/provid
 import { FeedbacksModule } from './modules/Feedbacks/feedbacks.module';
 import { RecommendationsModule } from './modules/recommendation/recommendations.module';
 import { ReportsAbuseModule } from './modules/report-abuse/reports-abuse.module';
+import { EmailService } from 'src/common/services/email.service';
 
 @Module({
   imports: [

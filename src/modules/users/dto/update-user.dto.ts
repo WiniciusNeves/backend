@@ -30,5 +30,5 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  profile_picture?: string;
+  profile_picture?: string | null;
 }

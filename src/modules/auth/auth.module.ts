@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
+import { EmailModule } from '@/common/services/email.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthController } from './auth.controller';
       secret: process.env.JWT_SECRET || 'defaultSecret',
       signOptions: { expiresIn: '1h' },
     }),
+    EmailModule
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

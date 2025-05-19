@@ -8,6 +8,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Role } from '../users/entities/user.entity';
 import * as admin from 'firebase-admin';
+import { VerifyEmailDto } from './dto/verifyEmailDto';
+import { EmailService } from '../../common/services/email.service';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +18,7 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) { }
 
   async register(registerDto: RegisterDto) {
@@ -163,4 +166,35 @@ async verifyEmail(token: string): Promise<{ message: string }> {
       throw new UnauthorizedException('Token inválido');
     }
   }
+  async sendVerificationCode(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if(!user){
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    const code = Math.floor(1000 + Math.random()*9000).toString();
+    user.verificationCode = code;
+
+    await this.emailService.sendVerificationCode(user.email, code);
+    await this.usersService.update(user.id, user);
+
+    return { message: 'Código de verificação enviado com sucesso' };
+
+  }
+  async verifyEmailCode(verifyEmailDto: VerifyEmailDto) {
+    const user = await this.usersService.findByEmail(verifyEmailDto.email);
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    if (user.verificationCode !== verifyEmailDto.code) {
+      throw new UnauthorizedException('Código de verificação inválido');
+    }
+
+    user.isEmailVerified = true;
+    await this.usersService.update(user.id, user);
+
+    return { message: 'E-mail verificado com sucesso' };
+  }
 }
+
