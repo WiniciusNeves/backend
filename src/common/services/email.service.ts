@@ -23,7 +23,7 @@ export class EmailService {
             html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 10px; padding: 30px;">
       <div style="text-align: center; padding-bottom: 20px;">
-        <img src="https://imgur.com/a/CbVvc71" alt="FACILITA" style="height: 60px;" />
+        <img src="https://i.imgur.com/awJ25G7.png" alt="FACILITA" style="height: 60px;" />
       </div>
 
       <h2 style="color: #2d3748;">Verificação de E-mail</h2>
